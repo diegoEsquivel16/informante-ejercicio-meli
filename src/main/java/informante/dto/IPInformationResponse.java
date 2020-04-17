@@ -8,11 +8,12 @@ public class IPInformationResponse {
     private String ip;
     private Date currentDate;
     private String country;
-    private String isoCode;
+    private List<String> isoCodes;
     private List<String> languages;
-    private String currency;
+    private List<String> currencies;
+    private List<Long> currenciesRatesInUSD;
     private List<String> timeZones;
-    private String estimatedDistance;
+    private double estimatedDistance;
 
     public String getIp() {
         return ip;
@@ -38,12 +39,12 @@ public class IPInformationResponse {
         this.country = country;
     }
 
-    public String getIsoCode() {
-        return isoCode;
+    public List<String> getIsoCodes() {
+        return isoCodes;
     }
 
-    public void setIsoCode(String isoCode) {
-        this.isoCode = isoCode;
+    public void setIsoCodes(List<String> isoCodes) {
+        this.isoCodes = isoCodes;
     }
 
     public List<String> getLanguages() {
@@ -54,12 +55,20 @@ public class IPInformationResponse {
         this.languages = languages;
     }
 
-    public String getCurrency() {
-        return currency;
+    public List<String> getCurrencies() {
+        return currencies;
     }
 
-    public void setCurrency(String currency) {
-        this.currency = currency;
+    public void setCurrencies(List<String> currencies) {
+        this.currencies = currencies;
+    }
+
+    public List<Long> getCurrenciesRatesInUSD() {
+        return currenciesRatesInUSD;
+    }
+
+    public void setCurrenciesRatesInUSD(List<Long> currenciesRatesInUSD) {
+        this.currenciesRatesInUSD = currenciesRatesInUSD;
     }
 
     public List<String> getTimeZones() {
@@ -70,11 +79,11 @@ public class IPInformationResponse {
         this.timeZones = timeZones;
     }
 
-    public String getEstimatedDistance() {
+    public double getEstimatedDistance() {
         return estimatedDistance;
     }
 
-    public void setEstimatedDistance(String estimatedDistance) {
+    public void setEstimatedDistance(double estimatedDistance) {
         this.estimatedDistance = estimatedDistance;
     }
 }
