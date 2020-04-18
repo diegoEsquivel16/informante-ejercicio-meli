@@ -1,18 +1,39 @@
 package informante.connector;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import informante.dto.CountryInformation;
+import informante.dto.IPGeoLocation;
+import informante.exception.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 public class CountriesConnector {
 
-    private String countriesConnectorHost;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CountriesConnector.class);
+    private static final String COUNTRY_INFO_PATH = "/rest/v2/alpha/";
+
+    private final RestClient client;
+    private final ObjectMapper mapper;
     //http://restcountries.eu/rest/v2/alpha/arg
 
     public CountriesConnector(String countriesConnectorHost) {
-        this.countriesConnectorHost = countriesConnectorHost;
+        this.client = new RestClient(countriesConnectorHost);
+        this.mapper = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public CountryInformation getCountryInformation(String countryCode){
-        return new CountryInformation();
+        LOGGER.info("Going to find the country information of {}", countryCode);
+        String stringResponse = client.getAsString(COUNTRY_INFO_PATH+countryCode);
+        try{
+           return mapper.readValue(stringResponse, CountryInformation.class);
+        } catch (IOException ioExc){
+            LOGGER.error("Couldn't parse the country information response {}", stringResponse);
+            throw new ServiceException(ioExc.getMessage());
+        }
     }
 }
 

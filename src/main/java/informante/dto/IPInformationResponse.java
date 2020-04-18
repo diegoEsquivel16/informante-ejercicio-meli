@@ -2,6 +2,7 @@ package informante.dto;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class IPInformationResponse {
 
@@ -11,9 +12,11 @@ public class IPInformationResponse {
     private List<String> isoCodes;
     private List<String> languages;
     private List<String> currencies;
-    private List<Long> currenciesRatesInUSD;
+    private Map<String, Long> currenciesRatesInUSD;
     private List<String> timeZones;
+    private List<Map<String,String>> datesWithTimeZoneMap;
     private double estimatedDistance;
+    private List<List<Double>> coordinates;
 
     public String getIp() {
         return ip;
@@ -63,11 +66,11 @@ public class IPInformationResponse {
         this.currencies = currencies;
     }
 
-    public List<Long> getCurrenciesRatesInUSD() {
+    public Map<String, Long> getCurrenciesRatesInUSD() {
         return currenciesRatesInUSD;
     }
 
-    public void setCurrenciesRatesInUSD(List<Long> currenciesRatesInUSD) {
+    public void setCurrenciesRatesInUSD(Map<String, Long> currenciesRatesInUSD) {
         this.currenciesRatesInUSD = currenciesRatesInUSD;
     }
 
@@ -79,11 +82,27 @@ public class IPInformationResponse {
         this.timeZones = timeZones;
     }
 
+    public List<Map<String, String>> getDatesWithTimeZoneMap() {
+        return datesWithTimeZoneMap;
+    }
+
+    public void setDatesWithTimeZoneMap(List<Map<String, String>> datesWithTimeZoneMap) {
+        this.datesWithTimeZoneMap = datesWithTimeZoneMap;
+    }
+
     public double getEstimatedDistance() {
         return estimatedDistance;
     }
 
     public void setEstimatedDistance(double estimatedDistance) {
         this.estimatedDistance = estimatedDistance;
+    }
+
+    public List<List<Double>> getCoordinates() {
+        return coordinates;
+    }
+
+    public void setCoordinates(List<List<Double>> coordinates) {
+        this.coordinates = coordinates;
     }
 }

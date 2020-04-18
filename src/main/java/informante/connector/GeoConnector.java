@@ -12,7 +12,7 @@ import java.io.IOException;
 public class GeoConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeoConnector.class);
-    private static String IP_PATH = "/ip?";
+    private static final String IP_PATH = "/ip?";
 
     private final RestClient client;
     private final ObjectMapper mapper;
