@@ -34,23 +34,22 @@ public class InformanteService {
 
     public IPInformationResponse getIpInformation(String ip){
         IPGeoLocation ipGeoLocation = getGeoLocation(ip);
-        CountryInformation countryInformation = getCountryInformation(ipGeoLocation);
-        Map<String, Long> currenciesRates = getCurrenciesInformationRates(countryInformation);
-        return buildIPInformationResponse(ip, ipGeoLocation, countryInformation, currenciesRates);
+        CountryInformation countryInfo = getCountryInformation(ipGeoLocation);
+        Map<String, Long> currenciesRates = getCurrenciesInformationRates(countryInfo);
+        return buildIPInformationResponse(ip, ipGeoLocation, countryInfo, currenciesRates);
     }
 
     private IPGeoLocation getGeoLocation(String ip){
         return geoConnector.getIPGeoLocation(ip);//TODO si queda esto solo lo pongo arriba
     }
 
-    private Map<String, Long> getCurrenciesInformationRates(CountryInformation countryInformation) {
-        List<String> currencyCodes = countryInformation.getCurrencies().stream().map(CurrencyInformation::getCode).collect(Collectors.toList());
+    private Map<String, Long> getCurrenciesInformationRates(CountryInformation countryInfo) {
+        List<String> currencyCodes = countryInfo.getCurrencies().stream().map(CurrencyInformation::getCode).collect(Collectors.toList());
         try{
             CurrencyServiceResponse currencyRates = currenciesConnector.getCurrenciesWithUSDAsBase(currencyCodes);
             return currencyRates.getRates();
-
         } catch (Exception exc){
-            LOGGER.error("Couldn't find the currencies {} of the country {}", currencyCodes, countryInformation.getName());
+            LOGGER.error("Couldn't find the currencies {} of the country {}", currencyCodes, countryInfo.getName());
             return new HashMap<>();
         }
     }
@@ -66,43 +65,44 @@ public class InformanteService {
         return countryInformation;
     }
 
-    private IPInformationResponse buildIPInformationResponse(String ip, IPGeoLocation ipGeoLocation, CountryInformation countryInformation, Map<String, Long> currenciesRates) {
+    private IPInformationResponse buildIPInformationResponse(String ip, IPGeoLocation ipGeoLocation,
+                                                    CountryInformation countryInfo, Map<String, Long> currenciesRates) {
         IPInformationResponse response = new IPInformationResponse();
         Date now = new Date();
         response.setIp(ip);
         response.setCurrentDate(now);
         response.setCountry(ipGeoLocation.getCountryName());
-        response.setIsoCodes(getIsoCodes(countryInformation));
-        response.setLanguages(getLanguages(countryInformation));
-        response.setCurrencies(getCurrencyCodes(countryInformation));
+        response.setIsoCodes(getIsoCodes(countryInfo));
+        response.setLanguages(getLanguages(countryInfo));
+        response.setCurrencies(getCurrencyCodes(countryInfo));
         response.setCurrenciesRatesInUSD(currenciesRates);
-        response.setTimeZones(countryInformation.getTimezones());
-        response.setDatesWithTimeZoneMap(buildDatesWithTimeZoneMap(now, countryInformation));
-        response.setEstimatedDistance(calculateDistanceFromReferencePoint(countryInformation));
-        response.setCoordinates(buildCoordinates(countryInformation));
+        response.setTimeZones(countryInfo.getTimezones());
+        response.setDatesWithTimeZoneMap(buildDatesWithTimeZoneMap(now, countryInfo));
+        response.setEstimatedDistance(calculateDistanceFromReferencePoint(countryInfo));
+        response.setCoordinates(buildCoordinates(countryInfo));
 
         return null;
     }
 
-    private List<List<Double>> buildCoordinates(CountryInformation countryInformation) {
+    private List<List<Double>> buildCoordinates(CountryInformation countryInfo) {
         return Arrays.asList(Arrays.asList(POINT_REFERENCE_LATITUDE, POINT_REFERENCE_LONGITUDE),
-                Arrays.asList(countryInformation.getLatitude().doubleValue(), countryInformation.getLongitude().doubleValue()));
+                Arrays.asList(countryInfo.getLatitude().doubleValue(), countryInfo.getLongitude().doubleValue()));
     }
 
-    private List<String> getIsoCodes(CountryInformation countryInformation){
-        return countryInformation.getLanguages().stream().map(LanguageInformation::getIso639One).collect(Collectors.toList());
+    private List<String> getIsoCodes(CountryInformation countryInfo){
+        return countryInfo.getLanguages().stream().map(LanguageInformation::getIso639One).collect(Collectors.toList());
     }
 
-    private List<String> getLanguages(CountryInformation countryInformation){
-        return countryInformation.getLanguages().stream().map(LanguageInformation::getName).collect(Collectors.toList());
+    private List<String> getLanguages(CountryInformation countryInfo){
+        return countryInfo.getLanguages().stream().map(LanguageInformation::getName).collect(Collectors.toList());
     }
 
-    private List<String> getCurrencyCodes(CountryInformation countryInformation){
-        return countryInformation.getCurrencies().stream().map(CurrencyInformation::getCode).collect(Collectors.toList());
+    private List<String> getCurrencyCodes(CountryInformation countryInfo){
+        return countryInfo.getCurrencies().stream().map(CurrencyInformation::getCode).collect(Collectors.toList());
     }
 
-    private List<Map<String,String>> buildDatesWithTimeZoneMap(Date now, CountryInformation countryInformation){
-        return countryInformation.getTimezones().stream()
+    private List<Map<String,String>> buildDatesWithTimeZoneMap(Date now, CountryInformation countryInfo){
+        return countryInfo.getTimezones().stream()
                 .map(t-> buildDateMap(now, t)).collect(Collectors.toList());
     }
 
@@ -112,9 +112,9 @@ public class InformanteService {
         return Map.ofEntries(Map.entry(timezone, formattedDate));
     }
 
-    private double calculateDistanceFromReferencePoint(CountryInformation countryInformation){
-        return GeoDistanceCalculator.getDistanceInKM(POINT_REFERENCE_LATITUDE, countryInformation.getLatitude(),
-                POINT_REFERENCE_LONGITUDE, countryInformation.getLongitude());
+    private double calculateDistanceFromReferencePoint(CountryInformation countryInfo){
+        return GeoDistanceCalculator.getDistanceInKM(POINT_REFERENCE_LATITUDE, countryInfo.getLatitude(),
+                POINT_REFERENCE_LONGITUDE, countryInfo.getLongitude());
     }
 
     public static void main(String[] args) {//TODO BORRAR ESTO SI ANDA
