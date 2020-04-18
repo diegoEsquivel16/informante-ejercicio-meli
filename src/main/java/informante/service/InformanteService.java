@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 public class InformanteService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InformanteService.class);
-    private GeoConnector geoConnector;
-    private CountriesConnector countriesConnector;
-    private CurrenciesConnector currenciesConnector;
+    private final GeoConnector geoConnector;
+    private final CountriesConnector countriesConnector;
+    private final CurrenciesConnector currenciesConnector;
     private double POINT_REFERENCE_LATITUDE;//BUE LAT -34.6131516
-    private double POINT_REFERENCE_LONGITUDE;//BUE LONG -58.3772316
-    private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss");
+    private final double POINT_REFERENCE_LONGITUDE;//BUE LONG -58.3772316
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss");
 
     public InformanteService(GeoConnector geoConnector, CountriesConnector countriesConnector, CurrenciesConnector currenciesConnector, double POINT_REFERENCE_LATITUDE, double POINT_REFERENCE_LONGITUDE) {
         this.geoConnector = geoConnector;
@@ -68,15 +68,16 @@ public class InformanteService {
 
     private IPInformationResponse buildIPInformationResponse(String ip, IPGeoLocation ipGeoLocation, CountryInformation countryInformation, Map<String, Long> currenciesRates) {
         IPInformationResponse response = new IPInformationResponse();
+        Date now = new Date();
         response.setIp(ip);
-        response.setCurrentDate(new Date());
+        response.setCurrentDate(now);
         response.setCountry(ipGeoLocation.getCountryName());
         response.setIsoCodes(getIsoCodes(countryInformation));
         response.setLanguages(getLanguages(countryInformation));
         response.setCurrencies(getCurrencyCodes(countryInformation));
         response.setCurrenciesRatesInUSD(currenciesRates);
         response.setTimeZones(countryInformation.getTimezones());
-        response.setDatesWithTimeZoneMap(buildDatesWithTimeZoneMap(countryInformation));
+        response.setDatesWithTimeZoneMap(buildDatesWithTimeZoneMap(now, countryInformation));
         response.setEstimatedDistance(calculateDistanceFromReferencePoint(countryInformation));
         response.setCoordinates(buildCoordinates(countryInformation));
 
@@ -100,8 +101,7 @@ public class InformanteService {
         return countryInformation.getCurrencies().stream().map(CurrencyInformation::getCode).collect(Collectors.toList());
     }
 
-    private List<Map<String,String>> buildDatesWithTimeZoneMap(CountryInformation countryInformation){
-        Date now = new Date();
+    private List<Map<String,String>> buildDatesWithTimeZoneMap(Date now, CountryInformation countryInformation){
         return countryInformation.getTimezones().stream()
                 .map(t-> buildDateMap(now, t)).collect(Collectors.toList());
     }
@@ -117,7 +117,7 @@ public class InformanteService {
                 POINT_REFERENCE_LONGITUDE, countryInformation.getLongitude());
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) {//TODO BORRAR ESTO SI ANDA
         String HOUR_FORMAT = "dd/MM/yy HH:mm:ss";
         OffsetDateTime datee = new Date().toInstant().atOffset(ZoneOffset.of("-08:00"));
         System.out.println("Hora UTC-8:00: "+ datee.format(DateTimeFormatter.ofPattern(HOUR_FORMAT)));
