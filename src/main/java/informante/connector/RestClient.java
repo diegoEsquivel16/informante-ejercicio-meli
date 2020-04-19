@@ -8,14 +8,15 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class RestClient {
 
     private final HttpClient client;
     private final String host;
 
-    public RestClient(String host){
-        this.client = HttpClients.createDefault();
+    public RestClient(String host, long connectionTimeoutInSeconds){
+        this.client = HttpClients.custom().setConnectionTimeToLive(connectionTimeoutInSeconds, TimeUnit.SECONDS).build();
         this.host = host;
     }
 

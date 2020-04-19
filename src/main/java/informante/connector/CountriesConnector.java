@@ -22,8 +22,9 @@ public class CountriesConnector {
     private final ObjectMapper mapper;
 
     @Autowired
-    public CountriesConnector(@Value("${countries-connector-host}") String countriesConnectorHost) {
-        this.client = new RestClient(countriesConnectorHost);
+    public CountriesConnector(@Value("${countries-connector-host}") String countriesConnectorHost,
+                              @Value("${countries-connector-connection-timeout-in-seconds}") long connectionTimeout) {
+        this.client = new RestClient(countriesConnectorHost, connectionTimeout);
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }

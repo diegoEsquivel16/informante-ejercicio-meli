@@ -25,8 +25,9 @@ public class CurrenciesConnector {
     private final ObjectMapper mapper;
 
     @Autowired
-    public CurrenciesConnector(@Value("${currencies-connector-host}") String currenciesConnectorHost) {
-        this.client = new RestClient(currenciesConnectorHost);
+    public CurrenciesConnector(@Value("${currencies-connector-host}") String currenciesConnectorHost,
+                               @Value("${currencies-connector-connection-timeout-in-seconds}") long connectionTimeout) {
+        this.client = new RestClient(currenciesConnectorHost, connectionTimeout);
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }

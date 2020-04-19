@@ -22,8 +22,9 @@ public class GeoConnector {
     private final ObjectMapper mapper;
 
     @Autowired
-    public GeoConnector(@Value("${geo-connector-host}") String geoConnectorHost) {
-        this.client = new RestClient(geoConnectorHost);
+    public GeoConnector(@Value("${geo-connector-host}") String geoConnectorHost,
+                        @Value("${geo-connector-connection-timeout-in-seconds}") long connectionTimeout) {
+        this.client = new RestClient(geoConnectorHost, connectionTimeout);
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
