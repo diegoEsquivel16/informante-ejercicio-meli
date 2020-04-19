@@ -7,6 +7,8 @@ import java.util.List;
 public class CountryInformation {
 
     private String name;
+    @JsonProperty("alpha3Code")
+    private String countryCode;
     @JsonProperty("latlng")
     private List<Integer> latitudeAndLongitude;
     private List<String> timezones;
@@ -19,6 +21,14 @@ public class CountryInformation {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
     }
 
     public List<Integer> getLatitudeAndLongitude() {

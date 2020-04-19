@@ -10,8 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class CurrenciesConnector {
@@ -23,22 +26,27 @@ public class CurrenciesConnector {
 
     private final RestClient client;
     private final ObjectMapper mapper;
+    private final String DEFAULT_BASE;
+    private CurrencyServiceResponse snapshotCurrenciesResponse;
 
     @Autowired
     public CurrenciesConnector(@Value("${currencies-connector-host}") String currenciesConnectorHost,
-                               @Value("${currencies-connector-connection-timeout-in-seconds}") long connectionTimeout) {
+                               @Value("${currencies-connector-connection-timeout-in-seconds}") long connectionTimeout,
+                               @Value("${currencies-connector-default-base}") String defaultBase) {
         this.client = new RestClient(currenciesConnectorHost, connectionTimeout);
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.DEFAULT_BASE = defaultBase;
     }
 
-    public CurrencyServiceResponse getAllCurrenciesWithUSDAsBase(){
-        return getAllCurrencies("USD");
+    @PostConstruct
+    private void buildSnapshot(){
+        this.snapshotCurrenciesResponse = getAllCurrencies();
     }
 
-    public CurrencyServiceResponse getAllCurrencies(String baseCurrencyCode){
+    public CurrencyServiceResponse getAllCurrencies(){
         LOGGER.info("Going to find all the currencies ");
-        String stringResponse = client.getAsString(buildLatestRatesPath(baseCurrencyCode));
+        String stringResponse = client.getAsString(buildLatestRatesPath());
         try{
             return mapper.readValue(stringResponse, CurrencyServiceResponse.class);
         } catch (IOException ioExc){
@@ -47,27 +55,37 @@ public class CurrenciesConnector {
         }
     }
 
-    public CurrencyServiceResponse getCurrenciesWithUSDAsBase(List<String> currencyCodes){
-        return getCurrencies("USD", currencyCodes);
+    public Map<String, Double> getCurrenciesRates(List<String> currencyCodes){
+        LOGGER.info("Going to find the currencies for the country codes {}", currencyCodes);
+        Map<String, Double> foundCurrencies = new HashMap<>();
+        for (String currencyCode : currencyCodes) {
+            foundCurrencies.put(currencyCode, this.snapshotCurrenciesResponse.getRates().get(currencyCode));
+        }
+        if(foundCurrencies.containsValue(null)){
+            LOGGER.info("Couldn't find all country codes from the Snapshot, looking in the Currency Service");
+            return getCurrenciesRatesFromService(currencyCodes);
+        }else{
+            return foundCurrencies;
+        }
     }
 
-    public CurrencyServiceResponse getCurrencies(String baseCurrencyCode, List<String> currencyCodes){
-        LOGGER.info("Going to find the latest currencies of {}",currencyCodes);
-        String stringResponse = client.getAsString(buildLatestRatesPathForCurrencies(baseCurrencyCode, currencyCodes));
+    private Map<String, Double> getCurrenciesRatesFromService(List<String> currencyCodes){
+        LOGGER.info("Going to find the latest currencies of {} from the service",currencyCodes);
+        String stringResponse = client.getAsString(buildLatestRatesPathForCurrencies(currencyCodes));
         try{
-            return mapper.readValue(stringResponse, CurrencyServiceResponse.class);
+            return mapper.readValue(stringResponse, CurrencyServiceResponse.class).getRates();
         } catch (IOException ioExc){
             LOGGER.error("Couldn't parse the currencies response {}", stringResponse);
             throw new ServiceException(ioExc.getMessage());
         }
     }
 
-    private String buildLatestRatesPath(String baseCurrency) {
-        return LATEST_RATES_PATH + BASE_PATH + baseCurrency;
+    private String buildLatestRatesPath() {
+        return LATEST_RATES_PATH + BASE_PATH + DEFAULT_BASE;
     }
 
-    private String buildLatestRatesPathForCurrencies(String baseCurrency, List<String> currencyCodes) {
-        return LATEST_RATES_PATH + BASE_PATH + baseCurrency +
+    private String buildLatestRatesPathForCurrencies(List<String> currencyCodes) {
+        return LATEST_RATES_PATH + BASE_PATH + DEFAULT_BASE +
                 "&" + SYMBOLS_PATH + String.join(",", currencyCodes);
     }
 }

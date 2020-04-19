@@ -4,6 +4,7 @@ import informante.connector.CountriesConnector;
 import informante.connector.CurrenciesConnector;
 import informante.connector.GeoConnector;
 import informante.dto.*;
+import informante.repository.CountryInformationRepository;
 import informante.repository.InvocationsPerCountryHistoryRepository;
 import informante.utils.GeoDistanceCalculator;
 import org.slf4j.Logger;
@@ -25,17 +26,19 @@ public class InformanteService {
     private final CountriesConnector countriesConnector;
     private final CurrenciesConnector currenciesConnector;
     private final InvocationsPerCountryHistoryRepository invocationsRepository;
+    private final CountryInformationRepository countryInformationRepository;
     private final double POINT_REFERENCE_LATITUDE;
     private final double POINT_REFERENCE_LONGITUDE;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss");
 
     @Autowired
     public InformanteService(GeoConnector geoConnector, CountriesConnector countriesConnector, CurrenciesConnector currenciesConnector,
-                             InvocationsPerCountryHistoryRepository invocationsRepository, @Value("${point-reference-latitude}") double pointReferenceLatitude, @Value("${point-reference-longitude}") double pointReferenceLongitude) {
+                             InvocationsPerCountryHistoryRepository invocationsRepository, CountryInformationRepository countryInformationRepository, @Value("${point-reference-latitude}") double pointReferenceLatitude, @Value("${point-reference-longitude}") double pointReferenceLongitude) {
         this.geoConnector = geoConnector;
         this.countriesConnector = countriesConnector;
         this.currenciesConnector = currenciesConnector;
         this.invocationsRepository = invocationsRepository;
+        this.countryInformationRepository = countryInformationRepository;
         this.POINT_REFERENCE_LATITUDE = pointReferenceLatitude;
         this.POINT_REFERENCE_LONGITUDE = pointReferenceLongitude;
     }
@@ -87,15 +90,25 @@ public class InformanteService {
     private Map<String, Double> getCurrenciesInformationRates(CountryInformation countryInfo) {
         List<String> currencyCodes = countryInfo.getCurrencies().stream().map(CurrencyInformation::getCode).collect(Collectors.toList());
         try{
-            CurrencyServiceResponse currencyRates = currenciesConnector.getCurrenciesWithUSDAsBase(currencyCodes);
-            return currencyRates.getRates();
+            return currenciesConnector.getCurrenciesRates(currencyCodes);
         } catch (Exception exc){
             LOGGER.error("Couldn't find the currencies {} of the country {}", currencyCodes, countryInfo.getName());
             return new HashMap<>();
         }
     }
 
-    private CountryInformation getCountryInformation(IPGeoLocation ipGeoLocation) {
+    private CountryInformation getCountryInformation(IPGeoLocation ipGeoLocation){
+        LOGGER.info("Going to find the country information for the country {}",ipGeoLocation.getCountryName());
+        CountryInformation countryInformation = this.countryInformationRepository.getCountryInformation(ipGeoLocation.getCountryCode3());
+        if(countryInformation == null){
+            LOGGER.info("Country not found in the repository, looking in the Country Service");
+            countryInformation = findCountryInformationFromService(ipGeoLocation);
+            this.countryInformationRepository.newCountryInformation(countryInformation);
+        }
+        return countryInformation;
+    }
+
+    private CountryInformation findCountryInformationFromService(IPGeoLocation ipGeoLocation) {
         CountryInformation countryInformation;
         try{
             countryInformation = countriesConnector.getCountryInformation(ipGeoLocation.getCountryCode3());
