@@ -53,6 +53,29 @@ public class InformanteService {
         return invocationsRepository.getAllInvocations();
     }
 
+    public IPInvocationsPerCountry getClosestInvocation(){
+        LOGGER.info("Going to find the closest invocation from the history");
+        Collection<IPInvocationsPerCountry> allInvocations = invocationsRepository.getAllInvocations().values();
+        return allInvocations.stream()
+                .min(Comparator.comparing(IPInvocationsPerCountry::getDistance))
+                .orElse(new IPInvocationsPerCountry());
+    }
+
+    public IPInvocationsPerCountry getFarthestInvocation(){
+        LOGGER.info("Going to find the farthest invocation from the history");
+        Collection<IPInvocationsPerCountry> allInvocations = invocationsRepository.getAllInvocations().values();
+        return allInvocations.stream()
+                .max(Comparator.comparing(IPInvocationsPerCountry::getDistance))
+                .orElse(new IPInvocationsPerCountry());
+    }
+
+    public AverageDistanceResponse getAverageInvocationDistance(){
+        Collection<IPInvocationsPerCountry> allInvocations = invocationsRepository.getAllInvocations().values();
+        Double totalDistance = allInvocations.stream().map(i -> i.getDistance() * i.getInvocations()).mapToDouble(Double::doubleValue).sum();
+        Integer totalInvocations = allInvocations.stream().map(IPInvocationsPerCountry::getInvocations).mapToInt(Integer::intValue).sum();
+        return new AverageDistanceResponse(totalDistance / totalInvocations);
+    }
+
     private void newIpInvocation(IPGeoLocation ipGeoLocation, IPInformationResponse informationResponse) {
         InvocationCountryInformation invocationCountryInfo = new InvocationCountryInformation();
         invocationCountryInfo.setCountryCode(ipGeoLocation.getCountryCode3());

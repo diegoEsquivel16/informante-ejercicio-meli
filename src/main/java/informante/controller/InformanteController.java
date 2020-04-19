@@ -1,5 +1,6 @@
 package informante.controller;
 
+import informante.dto.AverageDistanceResponse;
 import informante.dto.IPInformationResponse;
 import informante.dto.IPInvocationsPerCountry;
 import informante.exception.ServiceException;
@@ -37,9 +38,24 @@ public class InformanteController {
         }
     }
 
-    @GetMapping("/invocation-history")
+    @GetMapping("/invocations/history")
     public ResponseEntity<Map<String, IPInvocationsPerCountry>> getAllInvocations(){
         return ResponseEntity.ok(informanteService.getAllInvocations());
+    }
+
+    @GetMapping("/invocations/closest")
+    public ResponseEntity<IPInvocationsPerCountry> getClosestInvocation(){
+        return ResponseEntity.ok(informanteService.getClosestInvocation());
+    }
+
+    @GetMapping("/invocations/farthest")
+    public ResponseEntity<IPInvocationsPerCountry> getFarthestInvocation(){
+        return ResponseEntity.ok(informanteService.getFarthestInvocation());
+    }
+
+    @GetMapping("/invocations/average-distance")
+    public ResponseEntity<AverageDistanceResponse> getAverageDistanceInvocation(){
+        return ResponseEntity.ok(informanteService.getAverageInvocationDistance());
     }
 
 }
