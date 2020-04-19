@@ -12,10 +12,10 @@ public class IPInformationResponse {
     private List<String> isoCodes;
     private List<String> languages;
     private List<String> currencies;
-    private Map<String, Long> currenciesRatesInUSD;
+    private Map<String, Double> currenciesRatesInUSD;
     private List<String> timeZones;
-    private List<Map<String,String>> datesWithTimeZoneMap;
-    private double estimatedDistance;
+    private List<Map<String,String>> datesWithTimeZone;
+    private double estimatedDistanceFromReferencePointInKM;
     private List<List<Double>> coordinates;
 
     public String getIp() {
@@ -66,11 +66,11 @@ public class IPInformationResponse {
         this.currencies = currencies;
     }
 
-    public Map<String, Long> getCurrenciesRatesInUSD() {
+    public Map<String, Double> getCurrenciesRatesInUSD() {
         return currenciesRatesInUSD;
     }
 
-    public void setCurrenciesRatesInUSD(Map<String, Long> currenciesRatesInUSD) {
+    public void setCurrenciesRatesInUSD(Map<String, Double> currenciesRatesInUSD) {
         this.currenciesRatesInUSD = currenciesRatesInUSD;
     }
 
@@ -82,20 +82,20 @@ public class IPInformationResponse {
         this.timeZones = timeZones;
     }
 
-    public List<Map<String, String>> getDatesWithTimeZoneMap() {
-        return datesWithTimeZoneMap;
+    public List<Map<String, String>> getDatesWithTimeZone() {
+        return datesWithTimeZone;
     }
 
-    public void setDatesWithTimeZoneMap(List<Map<String, String>> datesWithTimeZoneMap) {
-        this.datesWithTimeZoneMap = datesWithTimeZoneMap;
+    public void setDatesWithTimeZone(List<Map<String, String>> datesWithTimeZone) {
+        this.datesWithTimeZone = datesWithTimeZone;
     }
 
-    public double getEstimatedDistance() {
-        return estimatedDistance;
+    public double getEstimatedDistanceFromReferencePointInKM() {
+        return estimatedDistanceFromReferencePointInKM;
     }
 
-    public void setEstimatedDistance(double estimatedDistance) {
-        this.estimatedDistance = estimatedDistance;
+    public void setEstimatedDistanceFromReferencePointInKM(double estimatedDistanceFromReferencePointInKM) {
+        this.estimatedDistanceFromReferencePointInKM = estimatedDistanceFromReferencePointInKM;
     }
 
     public List<List<Double>> getCoordinates() {

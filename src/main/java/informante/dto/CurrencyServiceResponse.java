@@ -5,15 +5,15 @@ import java.util.Map;
 
 public class CurrencyServiceResponse {
 
-    private Map<String, Long> rates;
+    private Map<String, Double> rates;
     private String base;
     private Date date;
 
-    public Map<String, Long> getRates() {
+    public Map<String, Double> getRates() {
         return rates;
     }
 
-    public void setRates(Map<String, Long> rates) {
+    public void setRates(Map<String, Double> rates) {
         this.rates = rates;
     }
 

@@ -2,28 +2,20 @@ package informante.connector;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import informante.dto.CountryInformation;
 import informante.dto.CurrencyServiceResponse;
 import informante.exception.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
 
+@Component
 public class CurrenciesConnector {
 
-    //https://api.exchangeratesapi.io/latest?base=USD
-    //https://api.exchangeratesapi.io/latest?base=USD&symbols=BRL
-/*
-{
-rates: {
-BRL: 5.2300184162
-},
-base: "USD",
-date: "2020-04-17"
-}
-*/
     private static final Logger LOGGER = LoggerFactory.getLogger(CurrenciesConnector.class);
     private static final String LATEST_RATES_PATH = "/latest?";
     private static final String BASE_PATH = "base=";
@@ -32,7 +24,8 @@ date: "2020-04-17"
     private final RestClient client;
     private final ObjectMapper mapper;
 
-    public CurrenciesConnector(String currenciesConnectorHost) {
+    @Autowired
+    public CurrenciesConnector(@Value("${currencies-connector-host}") String currenciesConnectorHost) {
         this.client = new RestClient(currenciesConnectorHost);
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

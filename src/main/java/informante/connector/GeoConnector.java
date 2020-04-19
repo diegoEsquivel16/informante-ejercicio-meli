@@ -6,9 +6,13 @@ import informante.dto.IPGeoLocation;
 import informante.exception.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
 public class GeoConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeoConnector.class);
@@ -16,16 +20,9 @@ public class GeoConnector {
 
     private final RestClient client;
     private final ObjectMapper mapper;
-    //https://api.ip2country.info/ip?5.6.7.8
-    /*
-    * {
-countryCode: "DE",
-countryCode3: "DEU",
-countryName: "Germany",
-countryEmoji: "🇩🇪"
-}
-    * */
-    public GeoConnector(String geoConnectorHost) {
+
+    @Autowired
+    public GeoConnector(@Value("${geo-connector-host}") String geoConnectorHost) {
         this.client = new RestClient(geoConnectorHost);
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

@@ -3,13 +3,16 @@ package informante.connector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import informante.dto.CountryInformation;
-import informante.dto.IPGeoLocation;
 import informante.exception.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
 public class CountriesConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CountriesConnector.class);
@@ -17,9 +20,9 @@ public class CountriesConnector {
 
     private final RestClient client;
     private final ObjectMapper mapper;
-    //http://restcountries.eu/rest/v2/alpha/arg
 
-    public CountriesConnector(String countriesConnectorHost) {
+    @Autowired
+    public CountriesConnector(@Value("${countries-connector-host}") String countriesConnectorHost) {
         this.client = new RestClient(countriesConnectorHost);
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

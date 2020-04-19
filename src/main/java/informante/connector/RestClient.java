@@ -11,11 +11,11 @@ import java.io.IOException;
 
 public class RestClient {
 
-    private HttpClient cliente;
-    private String host;
+    private final HttpClient client;
+    private final String host;
 
     public RestClient(String host){
-        this.cliente = HttpClients.createDefault();
+        this.client = HttpClients.createDefault();
         this.host = host;
     }
 
@@ -23,7 +23,7 @@ public class RestClient {
         String url = host + path;
         HttpGet httpGetRequest = new HttpGet(url);
         try{
-            return cliente.execute(httpGetRequest);
+            return client.execute(httpGetRequest);
         }catch (IOException exc){
             throw new RestClientHttpException(path);
         }

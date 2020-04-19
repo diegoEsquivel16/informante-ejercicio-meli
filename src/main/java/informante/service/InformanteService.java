@@ -4,46 +4,64 @@ import informante.connector.CountriesConnector;
 import informante.connector.CurrenciesConnector;
 import informante.connector.GeoConnector;
 import informante.dto.*;
+import informante.repository.InvocationsPerCountryHistoryRepository;
 import informante.utils.GeoDistanceCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Service
 public class InformanteService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InformanteService.class);
     private final GeoConnector geoConnector;
     private final CountriesConnector countriesConnector;
     private final CurrenciesConnector currenciesConnector;
-    private double POINT_REFERENCE_LATITUDE;//BUE LAT -34.6131516
-    private final double POINT_REFERENCE_LONGITUDE;//BUE LONG -58.3772316
+    private final InvocationsPerCountryHistoryRepository invocationsRepository;
+    private final double POINT_REFERENCE_LATITUDE;
+    private final double POINT_REFERENCE_LONGITUDE;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss");
 
-    public InformanteService(GeoConnector geoConnector, CountriesConnector countriesConnector, CurrenciesConnector currenciesConnector, double POINT_REFERENCE_LATITUDE, double POINT_REFERENCE_LONGITUDE) {
+    @Autowired
+    public InformanteService(GeoConnector geoConnector, CountriesConnector countriesConnector, CurrenciesConnector currenciesConnector,
+                             InvocationsPerCountryHistoryRepository invocationsRepository, @Value("${point-reference-latitude}") double pointReferenceLatitude, @Value("${point-reference-longitude}") double pointReferenceLongitude) {
         this.geoConnector = geoConnector;
         this.countriesConnector = countriesConnector;
         this.currenciesConnector = currenciesConnector;
-        this.POINT_REFERENCE_LATITUDE = POINT_REFERENCE_LATITUDE;
-        this.POINT_REFERENCE_LONGITUDE = POINT_REFERENCE_LONGITUDE;
+        this.invocationsRepository = invocationsRepository;
+        this.POINT_REFERENCE_LATITUDE = pointReferenceLatitude;
+        this.POINT_REFERENCE_LONGITUDE = pointReferenceLongitude;
     }
 
     public IPInformationResponse getIpInformation(String ip){
-        IPGeoLocation ipGeoLocation = getGeoLocation(ip);
+        IPGeoLocation ipGeoLocation = geoConnector.getIPGeoLocation(ip);
         CountryInformation countryInfo = getCountryInformation(ipGeoLocation);
-        Map<String, Long> currenciesRates = getCurrenciesInformationRates(countryInfo);
-        return buildIPInformationResponse(ip, ipGeoLocation, countryInfo, currenciesRates);
+        Map<String, Double> currenciesRates = getCurrenciesInformationRates(countryInfo);
+        IPInformationResponse informationResponse = buildIPInformationResponse(ip, ipGeoLocation, countryInfo, currenciesRates);
+        newIpInvocation(ipGeoLocation, informationResponse);
+        return informationResponse;
     }
 
-    private IPGeoLocation getGeoLocation(String ip){
-        return geoConnector.getIPGeoLocation(ip);//TODO si queda esto solo lo pongo arriba
+    public Map<String, IPInvocationsPerCountry> getAllInvocations(){
+        return invocationsRepository.getAllInvocations();
     }
 
-    private Map<String, Long> getCurrenciesInformationRates(CountryInformation countryInfo) {
+    private void newIpInvocation(IPGeoLocation ipGeoLocation, IPInformationResponse informationResponse) {
+        InvocationCountryInformation invocationCountryInfo = new InvocationCountryInformation();
+        invocationCountryInfo.setCountryCode(ipGeoLocation.getCountryCode3());
+        invocationCountryInfo.setCountryName(informationResponse.getCountry());
+        invocationCountryInfo.setDistance(informationResponse.getEstimatedDistanceFromReferencePointInKM());
+        invocationsRepository.addIPInvocation(invocationCountryInfo);
+    }
+
+    private Map<String, Double> getCurrenciesInformationRates(CountryInformation countryInfo) {
         List<String> currencyCodes = countryInfo.getCurrencies().stream().map(CurrencyInformation::getCode).collect(Collectors.toList());
         try{
             CurrencyServiceResponse currencyRates = currenciesConnector.getCurrenciesWithUSDAsBase(currencyCodes);
@@ -60,13 +78,13 @@ public class InformanteService {
             countryInformation = countriesConnector.getCountryInformation(ipGeoLocation.getCountryCode3());
         } catch (Exception exc){
             LOGGER.error("Couldn't find the country information of {} with code {}. Retrying with other county code", ipGeoLocation.getCountryName(), ipGeoLocation.getCountryCode());
-            countryInformation = countriesConnector.getCountryInformation(ipGeoLocation.getCountryCode3());
+            countryInformation = countriesConnector.getCountryInformation(ipGeoLocation.getCountryCode());
         }
         return countryInformation;
     }
 
     private IPInformationResponse buildIPInformationResponse(String ip, IPGeoLocation ipGeoLocation,
-                                                    CountryInformation countryInfo, Map<String, Long> currenciesRates) {
+                                                    CountryInformation countryInfo, Map<String, Double> currenciesRates) {
         IPInformationResponse response = new IPInformationResponse();
         Date now = new Date();
         response.setIp(ip);
@@ -77,11 +95,16 @@ public class InformanteService {
         response.setCurrencies(getCurrencyCodes(countryInfo));
         response.setCurrenciesRatesInUSD(currenciesRates);
         response.setTimeZones(countryInfo.getTimezones());
-        response.setDatesWithTimeZoneMap(buildDatesWithTimeZoneMap(now, countryInfo));
-        response.setEstimatedDistance(calculateDistanceFromReferencePoint(countryInfo));
+        response.setDatesWithTimeZone(buildDatesWithTimeZoneMap(now, countryInfo));
         response.setCoordinates(buildCoordinates(countryInfo));
 
-        return null;
+        IPInvocationsPerCountry invocations = invocationsRepository.getIPInvocations(ipGeoLocation.getCountryCode3());
+        if(invocations == null){
+            response.setEstimatedDistanceFromReferencePointInKM(calculateDistanceFromReferencePoint(countryInfo));
+        }else{
+            response.setEstimatedDistanceFromReferencePointInKM(invocations.getDistance());
+        }
+        return response;
     }
 
     private List<List<Double>> buildCoordinates(CountryInformation countryInfo) {
@@ -117,9 +140,4 @@ public class InformanteService {
                 POINT_REFERENCE_LONGITUDE, countryInfo.getLongitude());
     }
 
-    public static void main(String[] args) {//TODO BORRAR ESTO SI ANDA
-        String HOUR_FORMAT = "dd/MM/yy HH:mm:ss";
-        OffsetDateTime datee = new Date().toInstant().atOffset(ZoneOffset.of("-08:00"));
-        System.out.println("Hora UTC-8:00: "+ datee.format(DateTimeFormatter.ofPattern(HOUR_FORMAT)));
-    }
 }
