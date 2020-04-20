@@ -7,6 +7,7 @@ import informante.exception.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,11 +23,10 @@ public class GeoConnector {
     private final ObjectMapper mapper;
 
     @Autowired
-    public GeoConnector(@Value("${geo-connector-host}") String geoConnectorHost,
-                        @Value("${geo-connector-connection-timeout-in-seconds}") long connectionTimeout) {
-        this.client = new RestClient(geoConnectorHost, connectionTimeout);
-        this.mapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    public GeoConnector(@Qualifier("geo-connector-rest-client") RestClient restClient,
+                        ObjectMapper objectMapper) {
+        this.client = restClient;
+        this.mapper = objectMapper;
     }
 
     public IPGeoLocation getIPGeoLocation(String ip){

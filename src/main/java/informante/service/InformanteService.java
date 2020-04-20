@@ -51,10 +51,6 @@ public class InformanteService {
         return informationResponse;
     }
 
-    public Map<String, IPInvocationsPerCountry> getAllInvocations(){
-        return invocationsRepository.getAllInvocations();
-    }
-
     public IPInvocationsPerCountry getClosestInvocation(){
         LOGGER.info("Going to find the closest invocation from the history");
         Collection<IPInvocationsPerCountry> allInvocations = invocationsRepository.getAllInvocations().values();

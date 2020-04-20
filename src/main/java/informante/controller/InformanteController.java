@@ -38,11 +38,6 @@ public class InformanteController {
         }
     }
 
-    @GetMapping("/invocations/history")
-    public ResponseEntity<Map<String, IPInvocationsPerCountry>> getAllInvocations(){
-        return ResponseEntity.ok(informanteService.getAllInvocations());
-    }
-
     @GetMapping("/invocations/closest")
     public ResponseEntity<IPInvocationsPerCountry> getClosestInvocation(){
         return ResponseEntity.ok(informanteService.getClosestInvocation());

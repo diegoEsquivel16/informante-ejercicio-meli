@@ -7,6 +7,7 @@ import informante.exception.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -27,12 +28,10 @@ public class CurrenciesConnector {
     private final String DEFAULT_BASE;
 
     @Autowired
-    public CurrenciesConnector(@Value("${currencies-connector-host}") String currenciesConnectorHost,
-                               @Value("${currencies-connector-connection-timeout-in-seconds}") long connectionTimeout,
-                               @Value("${currencies-connector-default-base}") String defaultBase) {
-        this.client = new RestClient(currenciesConnectorHost, connectionTimeout);
-        this.mapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    public CurrenciesConnector(@Qualifier("currencies-connector-rest-client") RestClient restClient,
+                               ObjectMapper objectMapper, @Value("${currencies-connector-default-base}") String defaultBase) {
+        this.client = restClient;
+        this.mapper = objectMapper;
         this.DEFAULT_BASE = defaultBase;
     }
 
