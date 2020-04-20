@@ -1,5 +1,6 @@
 package informante.dto;
 
+
 public class AverageDistanceResponse {
 
     private Double averageDistance;

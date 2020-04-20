@@ -10,9 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +25,6 @@ public class CurrenciesConnector {
     private final RestClient client;
     private final ObjectMapper mapper;
     private final String DEFAULT_BASE;
-    private CurrencyServiceResponse snapshotCurrenciesResponse;
 
     @Autowired
     public CurrenciesConnector(@Value("${currencies-connector-host}") String currenciesConnectorHost,
@@ -37,11 +34,6 @@ public class CurrenciesConnector {
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.DEFAULT_BASE = defaultBase;
-    }
-
-    @PostConstruct
-    private void buildSnapshot(){
-        this.snapshotCurrenciesResponse = getAllCurrencies();
     }
 
     public CurrencyServiceResponse getAllCurrencies(){
@@ -56,20 +48,6 @@ public class CurrenciesConnector {
     }
 
     public Map<String, Double> getCurrenciesRates(List<String> currencyCodes){
-        LOGGER.info("Going to find the currencies for the country codes {}", currencyCodes);
-        Map<String, Double> foundCurrencies = new HashMap<>();
-        for (String currencyCode : currencyCodes) {
-            foundCurrencies.put(currencyCode, this.snapshotCurrenciesResponse.getRates().get(currencyCode));
-        }
-        if(foundCurrencies.containsValue(null)){
-            LOGGER.info("Couldn't find all country codes from the Snapshot, looking in the Currency Service");
-            return getCurrenciesRatesFromService(currencyCodes);
-        }else{
-            return foundCurrencies;
-        }
-    }
-
-    private Map<String, Double> getCurrenciesRatesFromService(List<String> currencyCodes){
         LOGGER.info("Going to find the latest currencies of {} from the service",currencyCodes);
         String stringResponse = client.getAsString(buildLatestRatesPathForCurrencies(currencyCodes));
         try{
