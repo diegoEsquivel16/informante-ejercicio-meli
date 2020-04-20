@@ -40,17 +40,32 @@ public class InformanteController {
 
     @GetMapping("/invocations/closest")
     public ResponseEntity<IPInvocationsPerCountry> getClosestInvocation(){
-        return ResponseEntity.ok(informanteService.getClosestInvocation());
+       try{
+           return ResponseEntity.ok(informanteService.getClosestInvocation());
+       } catch (Exception exc) {
+           LOGGER.error("Couldn't get the closest invocation");
+           return ResponseEntity.notFound().build();
+       }
     }
 
     @GetMapping("/invocations/farthest")
     public ResponseEntity<IPInvocationsPerCountry> getFarthestInvocation(){
-        return ResponseEntity.ok(informanteService.getFarthestInvocation());
+        try{
+            return ResponseEntity.ok(informanteService.getFarthestInvocation());
+        } catch (Exception exc) {
+            LOGGER.error("Couldn't get the farthest invocation");
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/invocations/average-distance")
     public ResponseEntity<AverageDistanceResponse> getAverageDistanceInvocation(){
-        return ResponseEntity.ok(informanteService.getAverageInvocationDistance());
+        try{
+            return ResponseEntity.ok(informanteService.getAverageInvocationDistance());
+        } catch (Exception exc) {
+            LOGGER.error("Couldn't get the average distance invocations");
+            return ResponseEntity.notFound().build();
+        }
     }
 
 }
