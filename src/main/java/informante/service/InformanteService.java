@@ -7,8 +7,10 @@ import informante.utils.IPInformationResponseBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,6 +23,7 @@ public class InformanteService {
     private final CurrenciesService currenciesService;
     private final InvocationsPerCountryHistoryRepository invocationsRepository;
     private final IPInformationResponseBuilder ipInformationResponseBuilder;
+    private AverageDistanceResponse averageDistance;
 
     @Autowired
     public InformanteService(GeoConnector geoConnector, CountryInformationService countryInformationService,
@@ -31,6 +34,12 @@ public class InformanteService {
         this.currenciesService = currenciesService;
         this.invocationsRepository = invocationsRepository;
         this.ipInformationResponseBuilder = ipInformationResponseBuilder;
+    }
+
+    @PostConstruct
+    private void initializeAverageDistance(){
+        this.averageDistance = new AverageDistanceResponse();
+        this.updateAverageInvocationDistance();
     }
 
     public IPInformationResponse getIpInformation(String ip){
@@ -63,11 +72,16 @@ public class InformanteService {
     }
 
     public AverageDistanceResponse getAverageInvocationDistance(){
+        return averageDistance;
+    }
+
+    @Scheduled(fixedRateString = "${fixed-rate-update-average-task-in-milliseconds}")
+    private void updateAverageInvocationDistance(){
         LOGGER.info("Going to calculate the average invocations distance");
         Collection<IPInvocationsPerCountry> allInvocations = invocationsRepository.getAllInvocations().values();
         Double totalDistance = allInvocations.stream().map(i -> i.getDistance() * i.getInvocations()).mapToDouble(Double::doubleValue).sum();
         Integer totalInvocations = allInvocations.stream().map(IPInvocationsPerCountry::getInvocations).mapToInt(Integer::intValue).sum();
-        return new AverageDistanceResponse(totalDistance / totalInvocations);
+        this.averageDistance.setAverageDistance((totalInvocations == 0) ? 0 : totalDistance / totalInvocations);
     }
 
     private Map<String, Double> getCurrenciesInformationRates(CountryInformation countryInfo) {

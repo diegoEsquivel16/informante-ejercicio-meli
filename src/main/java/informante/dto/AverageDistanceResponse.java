@@ -5,12 +5,11 @@ public class AverageDistanceResponse {
 
     private Double averageDistance;
 
-    public AverageDistanceResponse(Double averageDistance) {
-        this.averageDistance = averageDistance;
-    }
-
     public Double getAverageDistance() {
         return averageDistance;
     }
 
+    public void setAverageDistance(Double averageDistance) {
+        this.averageDistance = averageDistance;
+    }
 }
