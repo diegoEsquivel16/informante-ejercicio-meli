@@ -1,6 +1,5 @@
 package informante.connector;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import informante.dto.CurrencyServiceResponse;
 import informante.exception.ServiceException;
