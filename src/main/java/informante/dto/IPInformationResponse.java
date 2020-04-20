@@ -7,7 +7,7 @@ import java.util.Map;
 public class IPInformationResponse {
 
     private String ip;
-    private Date currentDate;
+    private String currentDate;
     private String country;
     private List<String> isoCodes;
     private List<String> languages;
@@ -26,11 +26,11 @@ public class IPInformationResponse {
         this.ip = ip;
     }
 
-    public Date getCurrentDate() {
+    public String getCurrentDate() {
         return currentDate;
     }
 
-    public void setCurrentDate(Date currentDate) {
+    public void setCurrentDate(String currentDate) {
         this.currentDate = currentDate;
     }
 

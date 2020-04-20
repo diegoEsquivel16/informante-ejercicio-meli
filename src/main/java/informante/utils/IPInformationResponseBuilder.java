@@ -38,7 +38,7 @@ public class IPInformationResponseBuilder {
         IPInformationResponse response = new IPInformationResponse();
         Date now = new Date();
         response.setIp(ip);
-        response.setCurrentDate(now);
+        response.setCurrentDate(now.toString());
         response.setCountry(ipGeoLocation.getCountryName());
         response.setIsoCodes(getIsoCodes(countryInfo));
         response.setLanguages(getLanguages(countryInfo));
