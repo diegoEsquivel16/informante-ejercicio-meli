@@ -2,6 +2,7 @@ package informante.connector;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import informante.dto.IPGeoLocation;
+import informante.exception.RestClientHttpException;
 import informante.exception.ServiceException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -57,6 +58,19 @@ public class GeoConnectorTest {
         geoResponse.setCountryName(null);
         when(client.getAsString(anyString())).thenReturn("");
         when(mapper.readValue(anyString(), eq(IPGeoLocation.class))).thenReturn(geoResponse);
+        geoConnector.getIPGeoLocation("ip");
+    }
+
+    @Test(expectedExceptions = ServiceException.class)
+    public void ifMapperParseFailsShouldThrowException() throws IOException{
+        when(client.getAsString(anyString())).thenReturn("");
+        when(mapper.readValue(anyString(), eq(IPGeoLocation.class))).thenThrow(IOException.class);
+        geoConnector.getIPGeoLocation("ip");
+    }
+
+    @Test(expectedExceptions = RestClientHttpException.class)
+    public void ifRestClientFailsShouldThrowException() {
+        when(client.getAsString(anyString())).thenThrow(RestClientHttpException.class);
         geoConnector.getIPGeoLocation("ip");
     }
 
