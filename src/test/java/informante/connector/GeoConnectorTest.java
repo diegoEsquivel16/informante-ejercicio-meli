@@ -7,12 +7,14 @@ import informante.exception.ServiceException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
+import static org.testng.Assert.assertEquals;
 
 public class GeoConnectorTest {
     @Mock
@@ -22,9 +24,26 @@ public class GeoConnectorTest {
     @InjectMocks
     GeoConnector geoConnector;
 
-    @BeforeTest
+    @BeforeMethod
     public void setUp() {
+        geoConnector = null;
         MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void ifResponseIsValidShouldReturnOK() throws IOException {
+        IPGeoLocation geoResponse = buildIPGeoLocation();
+        when(client.getAsString(anyString())).thenReturn("");
+        when(mapper.readValue(anyString(), eq(IPGeoLocation.class))).thenReturn(geoResponse);
+        IPGeoLocation serviceResponse = geoConnector.getIPGeoLocation("ip");
+
+        verify(client).getAsString(anyString());
+        verify(mapper).readValue(anyString(), eq(IPGeoLocation.class));
+
+        assertEquals(serviceResponse.getCountryName(), geoResponse.getCountryName());
+        assertEquals(serviceResponse.getCountryCode(), geoResponse.getCountryCode());
+        assertEquals(serviceResponse.getCountryCode3(), geoResponse.getCountryCode3());
+
     }
 
     @Test(expectedExceptions = ServiceException.class, expectedExceptionsMessageRegExp = "The Geo Service response it isn't a valid one!")
@@ -64,7 +83,7 @@ public class GeoConnectorTest {
     @Test(expectedExceptions = ServiceException.class)
     public void ifMapperParseFailsShouldThrowException() throws IOException{
         when(client.getAsString(anyString())).thenReturn("");
-        when(mapper.readValue(anyString(), eq(IPGeoLocation.class))).thenThrow(IOException.class);
+        given(mapper.readValue(anyString(), eq(IPGeoLocation.class))).willAnswer(invocation -> {throw new IOException();});
         geoConnector.getIPGeoLocation("ip");
     }
 
