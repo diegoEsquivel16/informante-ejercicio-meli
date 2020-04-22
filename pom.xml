@@ -15,15 +15,12 @@
     </parent>
 
     <properties>
-        <!--<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
-        <!--<guava.version>27.1-jre</guava.version>-->
-        <!--<junit.version>4.12</junit.version>-->
         <apache-http.version>4.5.8</apache-http.version>
         <jackson-databind.version>2.9.10.3</jackson-databind.version>
-        <!--<thumbnailator.version>0.4.8</thumbnailator.version>-->
-        <!--<mockito.version>1.10.19</mockito.version>-->
         <slf4j.version>1.7.30</slf4j.version>
         <spring.version>5.2.3.RELEASE</spring.version>
+        <testng.version>7.1.0</testng.version>
+        <apache-commons-lang>3.10</apache-commons-lang>
     </properties>
 
     <dependencies>
@@ -70,6 +67,21 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!--TESTING-->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--UTILS-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${apache-commons-lang}</version>
         </dependency>
 
     </dependencies>

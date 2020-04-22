@@ -3,6 +3,7 @@ package informante.connector;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import informante.dto.IPGeoLocation;
 import informante.exception.ServiceException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,13 +43,16 @@ public class GeoConnector {
     }
 
     private void validateResponse(IPGeoLocation ipGeoLocation) {
-        if(ipGeoLocation.getCountryCode().isBlank()){
+        if(ipGeoLocation == null){
+            throw new ServiceException("The Geo Service response it isn't a valid one!");
+        }
+        if(StringUtils.isBlank(ipGeoLocation.getCountryCode())){
             throw new ServiceException("The country code is blank!");
         }
-        if(ipGeoLocation.getCountryCode3().isBlank()){
+        if(StringUtils.isBlank(ipGeoLocation.getCountryCode3())){
             throw new ServiceException("The country code 3 is blank!");
         }
-        if(ipGeoLocation.getCountryName().isBlank()){
+        if(StringUtils.isBlank(ipGeoLocation.getCountryName())){
             throw new ServiceException("The country name is blank!");
         }
     }
