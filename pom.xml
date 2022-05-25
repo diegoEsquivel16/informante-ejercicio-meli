@@ -18,7 +18,7 @@
         <apache-http.version>4.5.12</apache-http.version>
         <jackson-databind.version>2.10.3</jackson-databind.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <spring.version>5.2.5.RELEASE</spring.version>
+        <spring.version>5.2.22.RELEASE</spring.version>
         <testng.version>7.1.0</testng.version>
         <apache-commons-lang>3.10</apache-commons-lang>
     </properties>
